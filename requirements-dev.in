@@ -1,0 +1,4 @@
+-r pytorch_examples/requirements.txt
+-r requirements-mpi.txt
+pip-tools
+pytest
