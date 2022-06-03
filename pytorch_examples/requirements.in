@@ -1,4 +1,6 @@
-# These are extracted from pytorch/pytorch:1.11.0-cuda11.3-cudnn8-runtime Docker image
+valohai-utils  # a helper library for Valohai
+
+# The rest are extracted from pytorch/pytorch:1.11.0-cuda11.3-cudnn8-runtime Docker image
 # with pip list and all `conda` packages removed and numpy changed to `>=` to avoid a dependency conflict
 backcall==0.2.0
 beautifulsoup4==4.10.0

@@ -1,6 +1,5 @@
-# https://pytorch.org/tutorials/intermediate/dist_tuto.html
+# Source: https://pytorch.org/tutorials/intermediate/dist_tuto.html
 
-import json
 import math
 from random import Random
 
@@ -9,6 +8,7 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 import torch.nn as nn
 import torch.nn.functional as F
+import valohai
 from torch import optim
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
@@ -138,20 +138,12 @@ def init(master_url, my_rank, world_size, fn):
 
 if __name__ == '__main__':
 
-    with open('/valohai/config/distributed.json') as fp:
-        distributed_config = json.load(fp)
-
-    master = None
-    for member in distributed_config['members']:
-        if member['member_id'] == '0':
-            master = member
-    assert master, 'Master not found in distributed configuration.'
-
     master_port = 1234
-    master_ip = master['network']['local_ips'][0]
+    master_ip = valohai.distributed.master().primary_local_ip
     url = f"tcp://{master_ip}:{master_port}"
-    size = distributed_config['config']['required_count']
-    rank = int(distributed_config['self']['member_id'])
+
+    size = valohai.distributed.required_count
+    rank = valohai.distributed.me().rank
 
     mp.set_start_method('spawn')
     p = mp.Process(target=init, args=(url, rank, size, run))

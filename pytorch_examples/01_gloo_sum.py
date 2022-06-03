@@ -1,16 +1,14 @@
-import json
-import socket
-
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
+import valohai
 
 
 def run(my_rank, world_size):
     group = dist.new_group(list(range(world_size)))
     tensor = torch.ones(1)
     dist.all_reduce(tensor, op=dist.ReduceOp.SUM, group=group)
-    print(f'Rank {my_rank} has data {tensor} on host {socket.gethostname()}')
+    print(f'Rank {my_rank} has data {tensor} on host {valohai.distributed.me().identity}')
 
 
 def init(master_url, my_rank, world_size, fn):
@@ -20,20 +18,12 @@ def init(master_url, my_rank, world_size, fn):
 
 if __name__ == '__main__':
 
-    with open('/valohai/config/distributed.json') as fp:
-        distributed_config = json.load(fp)
-
-    master = None
-    for member in distributed_config['members']:
-        if member['member_id'] == '0':
-            master = member
-    assert master, 'Master not found in distributed configuration.'
-
     master_port = 1234
-    master_ip = master['network']['local_ips'][0]
+    master_ip = valohai.distributed.master().primary_local_ip
     url = f"tcp://{master_ip}:{master_port}"
-    size = distributed_config['config']['required_count']
-    rank = int(distributed_config['self']['member_id'])
+
+    size = valohai.distributed.required_count
+    rank = valohai.distributed.me().rank
 
     mp.set_start_method('spawn')
     p = mp.Process(target=init, args=(url, rank, size, run))

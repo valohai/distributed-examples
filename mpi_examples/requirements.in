@@ -1,0 +1,2 @@
+valohai-utils   # a helper library for Valohai
+pycryptodome    # used by `run_mpirun.py` to generate OpenMPI SSH keys
