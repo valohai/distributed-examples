@@ -1,26 +1,26 @@
 ---
 
 - step:
-    name: basic-01-mpi-greeting
+    name: mpi-01-greeting
     image: python:3.9.12-bullseye
     command:
       - apt-get -yqq update
       - apt-get -yqq --no-install-recommends install openmpi-bin openssh-server
-      - pip install -r requirements-mpi.txt --disable-pip-version-check -q
-      - python run_mpirun.py python basic_examples/01_mpi_greeting.py
+      - pip install -r mpi_examples/requirements.txt --disable-pip-version-check -q
+      - python mpi_examples/run_mpirun.py python mpi_examples/01_greeting.py
     environment-variables:
       - name: VH_DOCKER_NETWORK
         default: host
 
 - step:
-    name: basic-02-mpi-parse-distributed-config
+    name: mpi-02-parse-distributed-config
     description: Parse, validate and print Valohai distributed task configuration.
     image: python:3.9.12-bullseye
     command:
       - apt-get -yqq update
       - apt-get -yqq --no-install-recommends install openmpi-bin openssh-server
-      - pip install -r requirements-mpi.txt --disable-pip-version-check -q
-      - python run_mpirun.py python basic_examples/02_mpi_parse_distributed_config.py
+      - pip install -r mpi_examples/requirements.txt --disable-pip-version-check -q
+      - python mpi_examples/run_mpirun.py python mpi_examples/02_parse_distributed_config.py
     environment-variables:
       - name: VH_DOCKER_NETWORK
         default: host
