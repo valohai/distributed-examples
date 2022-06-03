@@ -1,5 +1,4 @@
 import argparse
-import json
 import os
 import random
 import shutil
@@ -8,6 +7,7 @@ import sys
 import time
 from subprocess import Popen
 
+import valohai
 from Crypto.PublicKey import RSA
 
 
@@ -53,14 +53,6 @@ if __name__ == '__main__':
         help="show the resulting command but don't run it",
     )
     parser.add_argument(
-        '--distributed-config', '--dc',
-        required=False,
-        default='/valohai/config/distributed.json',
-        type=str,
-        metavar='PATH',
-        help='path to Valohai distributed configuration, default: "/valohai/config/distributed.json"'
-    )
-    parser.add_argument(
         '--master-wait', '--mw',
         required=False,
         default=5,
@@ -88,14 +80,7 @@ if __name__ == '__main__':
 
     print('Settings:', settings)
 
-    with open(settings.distributed_config) as fp:
-        distributed_config = json.load(fp)
-
-    group_name = distributed_config['config']['group_name']
-    member_id = distributed_config['config']['member_id']
-    is_master = member_id == '0'
-
-    print('Member:', distributed_config['self'])
+    print('Me:', valohai.distributed.me())
 
     home_dir = os.environ.get('HOME')
     if home_dir != '/root':
@@ -103,7 +88,7 @@ if __name__ == '__main__':
     else:
         ssh_dir = f'{home_dir}/.ssh'
 
-    private_key, public_key = generate_key_pair(seed=group_name)
+    private_key, public_key = generate_key_pair(seed=valohai.distributed.group_name)
 
     ssh_file = 'id_rsa'
     ssh_private_target = os.path.join(ssh_dir, ssh_file)
@@ -132,7 +117,7 @@ if __name__ == '__main__':
     for target in [ssh_private_target, ssh_public_target, authorized_keys_target, ssh_config_target]:
         os.chmod(target, mode=0o700)
 
-    if not is_master:
+    if not valohai.distributed.me().is_master:
         # fixes "Missing privilege separation directory: /run/sshd" if `sshd` was freshly installed
         os.makedirs('/run/sshd', mode=0o700, exist_ok=True)
         sshd_cmd = shutil.which('sshd')
@@ -152,8 +137,7 @@ if __name__ == '__main__':
 
     time.sleep(settings.master_wait)
 
-    members = distributed_config['members']
-    primary_local_ips = [m['network']['local_ips'][0] for m in members]
+    primary_local_ips = [m.primary_local_ip for m in valohai.distributed.members()]
     host_configurations = [f'{ip}:{settings.processes_per_host}' for ip in primary_local_ips]
     host_value = ','.join(host_configurations)
 
@@ -175,11 +159,11 @@ if __name__ == '__main__':
     options = [*options, *['-map-by', 'slot']]  # allows you to have a mixture of different NUMA configurations
 
     # specify/copy environment variables to all the workers
+    options = [*options, *['-x', 'VH_CONFIG_DIR=/valohai/config']]
     options = [*options, *['-x', 'NCCL_DEBUG=INFO']]
-    options = [*options, *['-x', 'LD_LIBRARY_PATH']]
     options = [*options, *['-x', 'PATH']]
 
-    options = [*options, *['-np', str(len(members) * settings.processes_per_host)]]
+    options = [*options, *['-np', str(valohai.distributed.required_count * settings.processes_per_host)]]
     options = [*options, *['--host', host_value]]
 
     if settings.verbose:
