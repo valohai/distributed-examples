@@ -54,3 +54,23 @@
     environment-variables:
       - name: VH_DOCKER_NETWORK
         default: host
+
+- step:
+    name: tensorflow-01-ring-mnist
+    image: tensorflow/tensorflow:2.9.1
+    command:
+      - pip install -r tensorflow_examples/requirements.txt --disable-pip-version-check -q
+      - python tensorflow_examples/01_ring_mnist.py
+    environment-variables:
+      - name: VH_DOCKER_NETWORK
+        default: host
+
+- step:
+    name: tensorflow-02-nccl-mnist
+    image: tensorflow/tensorflow:2.9.1-gpu
+    command:
+      - pip install -r tensorflow_examples/requirements.txt --disable-pip-version-check -q
+      - python tensorflow_examples/02_nccl_mnist.py
+    environment-variables:
+      - name: VH_DOCKER_NETWORK
+        default: host
