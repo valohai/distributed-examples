@@ -6,7 +6,7 @@
 #
 attrs==21.4.0
     # via jsonschema
-certifi==2022.5.18.1
+certifi==2022.12.7
     # via requests
 charset-normalizer==2.0.12
     # via requests
@@ -15,7 +15,7 @@ idna==3.3
 jsonschema==4.6.0
     # via valohai-yaml
 pycryptodome==3.14.1
-    # via -r mpi_examples/requirements.in
+    # via -r requirements.in
 pyrsistent==0.18.1
     # via jsonschema
 pyyaml==6.0
@@ -29,7 +29,7 @@ urllib3==1.26.9
 valohai-papi==0.1.3
     # via valohai-utils
 valohai-utils==0.2.0
-    # via -r mpi_examples/requirements.in
+    # via -r requirements.in
 valohai-yaml==0.23.0
     # via
     #   valohai-papi
